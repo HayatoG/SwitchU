@@ -11,7 +11,8 @@ RUN pacman -Syu --noconfirm \
     && pacman -Scc --noconfirm
 
 # Import devkitPro signing key
-RUN pacman-key --recv BC26F752D25B92CE272E0F44F7FD5492264BB9D0 \
+RUN pacman-key --init \
+    && pacman-key --recv BC26F752D25B92CE272E0F44F7FD5492264BB9D0 \
         --keyserver keyserver.ubuntu.com \
     && pacman-key --lsign BC26F752D25B92CE272E0F44F7FD5492264BB9D0
 
@@ -44,5 +45,7 @@ ENV PATH="${DEVKITPRO}/devkitA64/bin:${DEVKITPRO}/tools/bin:/root/.local/bin:${P
 WORKDIR /project
 
 # Default: configure + build both NSPs
+ENV XMAKE_ROOT=y
+
 CMD xmake f -p cross --toolchain=devkita64 -y \
     && xmake -j$(nproc)
