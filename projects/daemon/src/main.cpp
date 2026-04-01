@@ -579,7 +579,7 @@ static void mainLoop() {
         if (g_pendingAlbum) {
             g_pendingAlbum = false;
             switchu::FileLog::log("[main] executing pending album launch");
-            Result rc = launchLibraryApplet(AppletId_LibraryAppletPhotoViewer, "Album");
+            Result rc = launchLibraryApplet(AppletId_LibraryAppletPhotoViewer, "Album", nullptr, 0, 0x10000);
             if (R_FAILED(rc))
                 switchu::FileLog::log("[main] pending album FAIL: 0x%X", rc);
             switchu::FileLog::log("[main] relaunching menu after album");
