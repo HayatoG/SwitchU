@@ -36,6 +36,14 @@ public:
     // Release everything (textures + compressed data).
     void clear();
 
+    // Set a mapping from grid position to app/compressed-data index.
+    // When set, onPageChanged uses this instead of identity (pos == index).
+    // Pass -1 for positions with no texture (e.g. folder icons).
+    void setGridMapping(std::vector<int> gridPosToAppIndex);
+
+    // Reset page tracking so the next onPageChanged re-processes.
+    void resetPage() { m_lastPage = -1; }
+
     int  iconCount()         const { return (int)m_compressed.size(); }
     bool hasData(int index)  const { return index >= 0 && index < (int)m_compressed.size() && !m_compressed[index].empty(); }
 
@@ -65,6 +73,10 @@ private:
     std::vector<int> m_freeSlots;
 
     int m_lastPage = -1;
+
+    // Optional mapping: grid position → app index in m_compressed.
+    // Empty = identity mapping (position == index).
+    std::vector<int> m_gridMapping;
 
     // How many pages around the current one to keep loaded.
     static constexpr int kPageMargin = 1;

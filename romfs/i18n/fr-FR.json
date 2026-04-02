@@ -205,5 +205,22 @@
   "button": {
     "ok": "OK",
     "cancel": "Annuler"
+  },
+  "gameinfo": {
+    "playtime": { "unknown": "Temps: Inconnu", "never": "Temps: Jamais joué" },
+    "status": {
+      "suspended": "Statut: Suspendu", "needs_verify": "Statut: Vérification requise",
+      "needs_update": "Statut: Mise à jour disponible", "no_contents": "Statut: Données manquantes",
+      "cant_launch": "Statut: Impossible de lancer", "ready": "Statut: Prêt à lancer"
+    },
+    "folders": { "none": "Dossiers: Aucun", "label": "Dossiers: " },
+    "type_gamecard": "Carte de jeu", "type_digital": "Numérique",
+    "hint": { "manage": "A  \u2022  Gérer les dossiers", "close": "B  \u2022  Fermer" }
+  },
+  "folders": {
+    "dialog_title": "Gérer les dossiers", "not_in_any": "N'est dans aucun dossier.",
+    "in_label": "Dans: ", "instructions": "D-Pad: naviguer  A: confirmer  B: fermer",
+    "new_folder": "Nouveau dossier", "done": "Terminé",
+    "add_prefix": "+ ", "remove_prefix": "- "
   }
 }

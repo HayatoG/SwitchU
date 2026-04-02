@@ -26,6 +26,8 @@
 #include "launcher/AppListLoader.hpp"
 #include "launcher/IconStreamer.hpp"
 #include "core/SystemMessages.hpp"
+#include "core/FolderManager.hpp"
+#include "widgets/GameInfoOverlay.hpp"
 #include <nxui/widgets/Background.hpp>
 #include <nxui/widgets/Box.hpp>
 #include <memory>
@@ -85,6 +87,11 @@ private:
     void finalizeRefresh();
     void handleSystemAction(SysAction a);
 #endif
+    void rebuildGridIcons();
+    void showFolderDialog(uint64_t titleId);
+    void openGameInfo(GlossyIcon* icon);
+    std::shared_ptr<GlossyIcon> makeFolderIcon(const Folder& folder);
+    void openFolder(const std::string& folderId);
 
     nxui::Font  m_fontNormal;
     nxui::Font  m_fontSmall;
@@ -108,6 +115,7 @@ private:
     std::shared_ptr<UserSelectScreen>  m_userSelect;
     std::shared_ptr<OverlayDialog>     m_dialog;
     std::shared_ptr<SettingsScreen>    m_settings;
+    std::shared_ptr<GameInfoOverlay>   m_gameInfo;
 
     std::shared_ptr<nxui::Box> m_bgLayer;
     std::shared_ptr<nxui::Box> m_contentLayer;
@@ -144,10 +152,13 @@ private:
     bool m_asyncRefreshPending   = false;
     int  m_refreshPrevPage       = 0;
 
+    FolderManager m_folderMgr;
+
     AppConfig m_config;
     bool m_settingsNeedRefresh        = false;
     nxui::Widget* m_dialogReturnFocus = nullptr;
     bool m_dialogWasActive            = false;
+    bool m_gameInfoWasActive          = false;
     bool m_suppressNextNavigateSfx    = false;
     bool m_pendingNetConnect          = false;
 

@@ -205,5 +205,22 @@
   "button": {
     "ok": "OK",
     "cancel": "Cancel"
+  },
+  "gameinfo": {
+    "playtime": { "unknown": "Playtime: Unknown", "never": "Playtime: Never played" },
+    "status": {
+      "suspended": "Status: Suspended", "needs_verify": "Status: Needs verification",
+      "needs_update": "Status: Update available", "no_contents": "Status: Missing game data",
+      "cant_launch": "Status: Cannot launch", "ready": "Status: Ready to launch"
+    },
+    "folders": { "none": "Folders: None", "label": "Folders: " },
+    "type_gamecard": "Game Card", "type_digital": "Digital",
+    "hint": { "manage": "A  \u2022  Manage Folders", "close": "B  \u2022  Close" }
+  },
+  "folders": {
+    "dialog_title": "Manage Folders", "not_in_any": "Not in any folder.",
+    "in_label": "In: ", "instructions": "D-Pad: navigate  A: confirm  B: close",
+    "new_folder": "New Folder", "done": "Done",
+    "add_prefix": "+ ", "remove_prefix": "- "
   }
 }

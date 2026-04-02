@@ -205,5 +205,22 @@
   "button": {
     "ok": "OK",
     "cancel": "Annuleren"
+  },
+  "gameinfo": {
+    "playtime": { "unknown": "Speeltijd: Onbekend", "never": "Speeltijd: Nooit gespeeld" },
+    "status": {
+      "suspended": "Status: Gesuspendeerd", "needs_verify": "Status: Verificatie vereist",
+      "needs_update": "Status: Update beschikbaar", "no_contents": "Status: Spelgegevens ontbreken",
+      "cant_launch": "Status: Kan niet starten", "ready": "Status: Klaar om te starten"
+    },
+    "folders": { "none": "Mappen: Geen", "label": "Mappen: " },
+    "type_gamecard": "Spelkaart", "type_digital": "Digitaal",
+    "hint": { "manage": "A  \u2022  Mappen beheren", "close": "B  \u2022  Sluiten" }
+  },
+  "folders": {
+    "dialog_title": "Mappen beheren", "not_in_any": "Niet in een map.",
+    "in_label": "In: ", "instructions": "D-Pad: navigeren  A: bevestigen  B: sluiten",
+    "new_folder": "Nieuwe map", "done": "Klaar",
+    "add_prefix": "+ ", "remove_prefix": "- "
   }
 }

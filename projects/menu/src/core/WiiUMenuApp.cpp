@@ -260,8 +260,17 @@ void WiiUMenuApp::buildGrid() {
     m_theme = effective.toTheme();
 
     std::vector<std::shared_ptr<GlossyIcon>> icons;
-    for (int i = 0; i < m_model.count(); ++i)
-        icons.push_back(makeIcon(m_model.at(i)));
+    if (!m_model.hasFilter()) {
+        for (const auto& entry : m_model.entries()) {
+            if (m_folderMgr.folderNamesForTitle(entry.titleId).empty())
+                icons.push_back(makeIcon(entry));
+        }
+        for (const auto& folder : m_folderMgr.folders())
+            icons.push_back(makeFolderIcon(folder));
+    } else {
+        for (const auto& entry : m_model.filteredEntries())
+            icons.push_back(makeIcon(entry));
+    }
 
     m_background = std::make_shared<WaraWaraBackground>();
     m_background->setRect({0, 0, 1280, 720});
@@ -394,7 +403,6 @@ void WiiUMenuApp::buildGrid() {
         );
         focusManager().setFocus(m_dialog.get());
     };
-
     m_sidebar.build(app().gpu(), app().renderer(), SD_ASSETS, sidebarActions);
 
     wireGlobalActions();
@@ -454,6 +462,21 @@ void WiiUMenuApp::buildGrid() {
 
     m_overlayLayer->addChild(m_dialog);
     m_overlayLayer->addChild(m_launchAnim);
+
+    m_folderMgr.load(std::string(SD_ASSETS) + "/folders.dat");
+
+    m_gameInfo = std::make_shared<GameInfoOverlay>();
+    m_gameInfo->setFont(&m_fontNormal);
+    m_gameInfo->setSmallFont(&m_fontSmall);
+    m_gameInfo->setTheme(&m_theme);
+    m_gameInfo->setVisible(false);
+    m_gameInfo->setFocusable(false);
+    m_gameInfo->onManageFolders([this](uint64_t tid) {
+        if (m_gameInfo->isActive()) m_gameInfo->hide();
+        showFolderDialog(tid);
+    });
+    m_gameInfo->onCloseSfx([this]() { m_audio.playSfx(Sfx::ModalHide); });
+    m_overlayLayer->addChild(m_gameInfo);
 
     root.addChild(m_bgLayer);
     root.addChild(m_contentLayer);
@@ -744,7 +767,8 @@ void WiiUMenuApp::wireFocusCallback() {
     focusManager().onFocusChanged([this](nxui::Widget*, nxui::Widget* cur) {
         updateCursor();
 
-        if ((m_dialog && m_dialog->isActive()) ||
+        if ((m_gameInfo && m_gameInfo->isActive()) ||
+            (m_dialog && m_dialog->isActive()) ||
             (m_settings && m_settings->isActive()) ||
             (m_userSelect && m_userSelect->isActive()))
             return;
@@ -757,12 +781,21 @@ void WiiUMenuApp::wireFocusCallback() {
         if (cur && cur->tag() == "glossy_icon") {
             m_grid->focusManager().setFocus(cur);
             auto* icon = static_cast<GlossyIcon*>(cur);
+            std::string titleText;
 #ifndef SWITCHU_HOMEBREW
             if (m_launcher.isAppSuspended(icon->titleId()))
-                m_titlePill->setText(std::string("\xe2\x96\xb6  ") + icon->title());
+                titleText = std::string("\xe2\x96\xb6  ") + icon->title();
             else
 #endif
-                m_titlePill->setText(icon->title());
+                titleText = icon->title();
+            if (m_model.hasFilter())
+                titleText = "[" + m_model.filterName() + "]  " + titleText;
+            m_titlePill->setText(titleText);
+            m_titlePill->setVisible(true);
+        } else if (cur && cur->tag() == "folder_icon") {
+            m_grid->focusManager().setFocus(cur);
+            auto* icon = static_cast<GlossyIcon*>(cur);
+            m_titlePill->setText(icon->title());
             m_titlePill->setVisible(true);
         } else if (cur) {
             for (auto& btn : m_sidebar.leftButtons()) {
@@ -778,13 +811,19 @@ void WiiUMenuApp::wireFocusCallback() {
     });
     updateCursor();
     if (auto* cur = focusManager().current()) {
-        if (cur->tag() == "glossy_icon")
+        if (cur->tag() == "glossy_icon") {
+            std::string t = static_cast<GlossyIcon*>(cur)->title();
+            if (m_model.hasFilter()) t = "[" + m_model.filterName() + "]  " + t;
+            m_titlePill->setText(t);
+        } else if (cur->tag() == "folder_icon") {
             m_titlePill->setText(static_cast<GlossyIcon*>(cur)->title());
+        }
     }
 }
 
 bool WiiUMenuApp::isCurrentFocusableWidget(nxui::Widget* w) const {
     if (!w) return false;
+    if (m_gameInfo && m_gameInfo.get() == w) return w->isFocusable();
     if (m_settings && m_settings.get() == w) return w->isFocusable();
     for (const auto& btn : m_sidebar.leftButtons())
         if (btn.get() == w) return w->isFocusable();
@@ -799,6 +838,7 @@ bool WiiUMenuApp::isCurrentFocusableWidget(nxui::Widget* w) const {
 nxui::Widget* WiiUMenuApp::focusRoot() {
     if (m_suspended) return nullptr;
     if (m_launchAnim && m_launchAnim->isPlaying()) return nullptr;
+    if (m_gameInfo && m_gameInfo->isActive()) return m_gameInfo.get();
     if (m_dialog && m_dialog->isActive()) return m_dialog.get();
     if (m_settings && m_settings->isActive()) return m_settings.get();
     if (m_userSelect && m_userSelect->isActive()) return m_userSelect.get();
@@ -856,8 +896,8 @@ void WiiUMenuApp::wireGlobalActions() {
                     for (auto& ic : m_grid->allIcons())
                         ic->setSuspended(false);
                     if (auto* cur = m_grid->focusManager().current()) {
-                        auto* icon = static_cast<GlossyIcon*>(cur);
-                        m_titlePill->setText(icon->title());
+                        if (cur->tag() == "glossy_icon" || cur->tag() == "folder_icon")
+                            m_titlePill->setText(static_cast<GlossyIcon*>(cur)->title());
                     }
                 }, true}
             },
@@ -867,6 +907,22 @@ void WiiUMenuApp::wireGlobalActions() {
         focusManager().setFocus(m_dialog.get());
     });
 #endif
+
+    root.addAction(static_cast<uint64_t>(nxui::Button::Y), [this]() {
+        auto* cur = focusManager().current();
+        if (!cur || cur->tag() != "glossy_icon") return;
+        openGameInfo(static_cast<GlossyIcon*>(cur));
+    });
+
+    root.addAction(static_cast<uint64_t>(nxui::Button::B), [this]() {
+        if (!m_model.hasFilter()) return;
+        if (m_gameInfo && m_gameInfo->isActive()) return;
+        if (m_dialog && m_dialog->isActive()) return;
+        if (m_settings && m_settings->isActive()) return;
+        m_model.clearFolderFilter();
+        m_audio.playSfx(Sfx::PageChange);
+        rebuildGridIcons();
+    });
 }
 
 void WiiUMenuApp::handleTouch() {
@@ -911,7 +967,7 @@ void WiiUMenuApp::handleSystemAction(SysAction a) {
             for (auto& ic : m_grid->allIcons())
                 ic->setSuspended(m_launcher.suspendedTitleId() != 0 &&
                                  ic->titleId() == m_launcher.suspendedTitleId());
-            if (auto* cur = m_grid->focusManager().current()) {
+            if (auto* cur = m_grid->focusManager().current(); cur && cur->tag() == "glossy_icon") {
                 auto* icon = static_cast<GlossyIcon*>(cur);
                 if (m_launcher.isAppSuspended(icon->titleId()))
                     m_titlePill->setText(std::string("\xe2\x96\xb6  ") + icon->title());
@@ -959,13 +1015,39 @@ void WiiUMenuApp::finalizeRefresh() {
     DebugLog::log("[refresh] found %d apps", m_model.count());
 
     std::vector<std::shared_ptr<GlossyIcon>> icons;
-    for (int i = 0; i < m_model.count(); ++i) {
-        auto icon = makeIcon(m_model.at(i));
-        icon->setBaseColor(m_theme.iconDefault);
-        icons.push_back(std::move(icon));
+    std::vector<int> gridMapping;
+
+    if (!m_model.hasFilter()) {
+        const auto& allEntries = m_model.entries();
+        for (int i = 0; i < (int)allEntries.size(); ++i) {
+            if (m_folderMgr.folderNamesForTitle(allEntries[i].titleId).empty()) {
+                auto icon = makeIcon(allEntries[i]);
+                icon->setBaseColor(m_theme.iconDefault);
+                icons.push_back(std::move(icon));
+                gridMapping.push_back(i);
+            }
+        }
+        for (const auto& folder : m_folderMgr.folders()) {
+            icons.push_back(makeFolderIcon(folder));
+            gridMapping.push_back(-1);
+        }
+    } else {
+        const auto& allEntries = m_model.entries();
+        for (const auto& entry : m_model.filteredEntries()) {
+            auto icon = makeIcon(entry);
+            icon->setBaseColor(m_theme.iconDefault);
+            icons.push_back(std::move(icon));
+            for (int j = 0; j < (int)allEntries.size(); ++j) {
+                if (allEntries[j].titleId == entry.titleId) {
+                    gridMapping.push_back(j);
+                    break;
+                }
+            }
+        }
     }
 
     m_grid->setup(std::move(icons), 5, 3, 150, 150, 20, 16);
+    m_iconStreamer.setGridMapping(std::move(gridMapping));
     if (m_refreshPrevPage > 0) m_grid->setPage(m_refreshPrevPage);
     wireFocusCallback();
     m_grid->onPageSwitched([this]() {
@@ -1019,7 +1101,6 @@ void WiiUMenuApp::finalizeRefresh() {
             {{"OK", [this]() {}, true}}, 0, {});
         focusManager().setFocus(m_dialog.get());
     };
-
     m_sidebar.build(app().gpu(), app().renderer(), SD_ASSETS, actions);
 
     if (m_leftSidebar) {
@@ -1050,7 +1131,10 @@ void WiiUMenuApp::applyTheme() {
     m_background->setShapeColor(m_theme.shapeColor);
 
     for (auto& icon : m_grid->allIcons()) {
-        icon->setBaseColor(m_theme.iconDefault);
+        if (icon->tag() == "folder_icon")
+            icon->setBaseColor(m_theme.cursorNormal);
+        else
+            icon->setBaseColor(m_theme.iconDefault);
         icon->setBorderColor(m_theme.panelBorder);
         icon->setHighlightColor(m_theme.panelHighlight);
         icon->setCornerRadius(m_theme.iconCornerRadius);
@@ -1105,6 +1189,9 @@ void WiiUMenuApp::applyTheme() {
 
     if (m_settings)
         m_settings->setTheme(&m_theme);
+
+    if (m_gameInfo)
+        m_gameInfo->setTheme(&m_theme);
 
     m_sidebar.applyTheme(m_theme);
 }
@@ -1212,7 +1299,7 @@ void WiiUMenuApp::onUpdate(float dt) {
             uint64_t sTid = m_launcher.suspendedTitleId();
             for (auto& ic : m_grid->allIcons())
                 ic->setSuspended(sTid != 0 && ic->titleId() == sTid);
-            if (auto* cur = m_grid->focusManager().current()) {
+            if (auto* cur = m_grid->focusManager().current(); cur && cur->tag() == "glossy_icon") {
                 auto* icon = static_cast<GlossyIcon*>(cur);
                 if (m_launcher.isAppSuspended(icon->titleId()))
                     m_titlePill->setText(std::string("\xe2\x96\xb6  ") + icon->title());
@@ -1334,10 +1421,22 @@ void WiiUMenuApp::onUpdate(float dt) {
         m_loadingScreenFrames = 0;
     }
 
+    bool gameInfoActiveNow = (m_gameInfo && m_gameInfo->isActive());
+    if (m_gameInfo) m_gameInfo->update(dt);
+    if (m_gameInfoWasActive && !gameInfoActiveNow) {
+        if (isCurrentFocusableWidget(m_dialogReturnFocus)) {
+            m_suppressNextNavigateSfx = true;
+            focusManager().setFocus(m_dialogReturnFocus);
+        }
+        m_dialogReturnFocus = nullptr;
+    }
+    m_gameInfoWasActive = gameInfoActiveNow;
+
     if (!m_launchAnim->isPlaying()
         && !(m_dialog && m_dialog->isActive())
         && !(m_settings && m_settings->isActive())
-        && !(m_userSelect && m_userSelect->isActive()))
+        && !(m_userSelect && m_userSelect->isActive())
+        && !gameInfoActiveNow)
     {
         handleTouch();
     }
@@ -1363,6 +1462,7 @@ void WiiUMenuApp::onUpdate(float dt) {
 
     if (!(m_userSelect && m_userSelect->isActive())
         && !(m_dialog && m_dialog->isActive())
+        && !gameInfoActiveNow
         && !m_launchAnim->isPlaying())
     {
         auto* cur = focusManager().current();
@@ -1413,7 +1513,8 @@ void WiiUMenuApp::onRender(nxui::Renderer& ren) {
 }
 
 void WiiUMenuApp::updateCursor() {
-    if ((m_settings && m_settings->isActive()) ||
+    if ((m_gameInfo && m_gameInfo->isActive()) ||
+        (m_settings && m_settings->isActive()) ||
         (m_dialog && m_dialog->isActive()) ||
         (m_userSelect && m_userSelect->isActive()))
         return;
@@ -1426,4 +1527,178 @@ void WiiUMenuApp::updateCursor() {
     } else {
         m_cursor->setVisible(false);
     }
+}
+
+void WiiUMenuApp::openGameInfo(GlossyIcon* icon) {
+    if (!m_gameInfo || !icon) return;
+    m_audio.playSfx(Sfx::ModalShow);
+    m_dialogReturnFocus = icon;
+
+    GameInfoOverlay::Info info;
+    info.title       = icon->title();
+    info.titleId     = icon->titleId();
+    info.iconTex     = icon->texture();
+    info.folderNames = m_folderMgr.folderNamesForTitle(icon->titleId());
+
+    const AppEntry* entry = m_model.findByTitleId(icon->titleId());
+    if (entry) {
+        info.isGameCard  = entry->isGameCard();
+        info.canLaunch   = entry->canLaunch();
+        info.needsUpdate = entry->needsUpdate();
+        info.needsVerify = entry->needsVerify();
+        info.hasContents = entry->hasContents();
+    } else {
+        info.canLaunch   = true;
+        info.hasContents = true;
+    }
+#ifndef SWITCHU_HOMEBREW
+    info.isSuspended = m_launcher.isAppSuspended(icon->titleId());
+#endif
+
+    m_gameInfo->show(info);
+    focusManager().setFocus(m_gameInfo.get());
+}
+
+void WiiUMenuApp::showFolderDialog(uint64_t titleId) {
+    if (!m_dialog) return;
+    m_audio.playSfx(Sfx::ModalShow);
+
+    auto& i18n = nxui::I18n::instance();
+
+    // Build message: list which folders this game is in
+    auto currentNames = m_folderMgr.folderNamesForTitle(titleId);
+    std::string message;
+    if (currentNames.empty()) {
+        message = i18n.tr("folders.not_in_any", "Not in any folder.");
+    } else {
+        message = i18n.tr("folders.in_label", "In: ");
+        for (int i = 0; i < (int)currentNames.size(); ++i) {
+            if (i > 0) message += ", ";
+            message += currentNames[i];
+        }
+    }
+    message += "\n" + i18n.tr("folders.instructions", "D-Pad: navigate  A: confirm  B: close");
+
+    std::vector<OverlayDialog::ButtonDef> buttons;
+
+    // Show up to 2 folder toggle buttons (+ prefix shows membership)
+    const auto& folders = m_folderMgr.folders();
+    int shown = std::min((int)folders.size(), 2);
+    for (int i = 0; i < shown; ++i) {
+        const auto& folder = folders[i];
+        bool inFolder = m_folderMgr.isInFolder(folder.id, titleId);
+        std::string label = (inFolder
+            ? i18n.tr("folders.remove_prefix", "- ") + folder.name
+            : i18n.tr("folders.add_prefix",    "+ ") + folder.name);
+        std::string fid = folder.id;
+        buttons.push_back({label, [this, fid, titleId, inFolder]() {
+            if (inFolder)
+                m_folderMgr.removeFromFolder(fid, titleId);
+            else
+                m_folderMgr.addToFolder(fid, titleId);
+            if (m_gameInfo && m_gameInfo->isActive())
+                m_gameInfo->updateFolderNames(m_folderMgr.folderNamesForTitle(titleId));
+            rebuildGridIcons();
+            showFolderDialog(titleId);
+        }, false});
+    }
+
+    // New Folder button
+    buttons.push_back({i18n.tr("folders.new_folder", "New Folder"), [this, titleId]() {
+        std::string name = "Folder " + std::to_string(m_folderMgr.count() + 1);
+        std::string fid = m_folderMgr.createFolder(name);
+        m_folderMgr.addToFolder(fid, titleId);
+        if (m_gameInfo && m_gameInfo->isActive())
+            m_gameInfo->updateFolderNames(m_folderMgr.folderNamesForTitle(titleId));
+        rebuildGridIcons();
+        showFolderDialog(titleId);
+    }, false});
+
+    buttons.push_back({i18n.tr("folders.done", "Done"), [this]() {}, true});
+
+    m_dialogReturnFocus = focusManager().current();
+    int defaultIdx = (int)buttons.size() - 1;
+    m_dialog->show(i18n.tr("folders.dialog_title", "Manage Folders"),
+                   message, std::move(buttons), defaultIdx, {});
+    focusManager().setFocus(m_dialog.get());
+}
+
+std::shared_ptr<GlossyIcon> WiiUMenuApp::makeFolderIcon(const Folder& folder) {
+    auto icon = std::make_shared<GlossyIcon>();
+    icon->setTag("folder_icon");
+    icon->setTitle(folder.name);
+    icon->setTitleId(0);
+    icon->setTexture(nullptr);
+    icon->setCornerRadius(m_theme.iconCornerRadius);
+    icon->setBaseColor(m_theme.cursorNormal);
+    icon->setBorderColor(m_theme.panelBorder);
+    icon->setHighlightColor(m_theme.panelHighlight);
+    std::string fid = folder.id;
+    icon->setOnActivate([this, fid]() { openFolder(fid); });
+    return icon;
+}
+
+void WiiUMenuApp::openFolder(const std::string& folderId) {
+    for (const auto& f : m_folderMgr.folders()) {
+        if (f.id == folderId) {
+            m_model.setFolderFilter(f.name, f.titleIds);
+            m_audio.playSfx(Sfx::Activate);
+            rebuildGridIcons();
+            return;
+        }
+    }
+}
+
+void WiiUMenuApp::rebuildGridIcons() {
+    m_grid->clearChildren();
+
+    std::vector<std::shared_ptr<GlossyIcon>> icons;
+    std::vector<int> gridMapping;
+
+    if (!m_model.hasFilter()) {
+        const auto& allEntries = m_model.entries();
+        for (int i = 0; i < (int)allEntries.size(); ++i) {
+            if (m_folderMgr.folderNamesForTitle(allEntries[i].titleId).empty()) {
+                auto icon = makeIcon(allEntries[i]);
+                icon->setBaseColor(m_theme.iconDefault);
+                icons.push_back(std::move(icon));
+                gridMapping.push_back(i);
+            }
+        }
+        for (const auto& folder : m_folderMgr.folders()) {
+            icons.push_back(makeFolderIcon(folder));
+            gridMapping.push_back(-1);
+        }
+    } else {
+        const auto& allEntries = m_model.entries();
+        for (const auto& entry : m_model.filteredEntries()) {
+            auto icon = makeIcon(entry);
+            icon->setBaseColor(m_theme.iconDefault);
+            icons.push_back(std::move(icon));
+            for (int j = 0; j < (int)allEntries.size(); ++j) {
+                if (allEntries[j].titleId == entry.titleId) {
+                    gridMapping.push_back(j);
+                    break;
+                }
+            }
+        }
+    }
+
+    m_grid->setup(std::move(icons), 5, 3, 150, 150, 20, 16);
+    m_iconStreamer.setGridMapping(std::move(gridMapping));
+    m_iconStreamer.resetPage();
+
+    wireFocusCallback();
+    m_grid->onPageSwitched([this]() {
+        m_iconStreamer.onPageChanged(m_grid->currentPage(), m_grid->iconsPerPage(),
+                                     app().gpu(), app().renderer(), m_grid->allIcons());
+        if (auto* target = m_grid->focusManager().current())
+            focusManager().setFocus(target);
+        updateCursor();
+    });
+    m_iconStreamer.onPageChanged(0, m_grid->iconsPerPage(),
+                                 app().gpu(), app().renderer(), m_grid->allIcons());
+    m_grid->startAppearAnimation();
+    if (auto* first = m_grid->focusManager().current())
+        focusManager().setFocus(first);
 }

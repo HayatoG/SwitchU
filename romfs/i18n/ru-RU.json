@@ -205,5 +205,22 @@
   "button": {
     "ok": "OK",
     "cancel": "Отмена"
+  },
+  "gameinfo": {
+    "playtime": { "unknown": "Время: Неизвестно", "never": "Время: Ни разу не играл" },
+    "status": {
+      "suspended": "Статус: Приостановлено", "needs_verify": "Статус: Требуется проверка",
+      "needs_update": "Статус: Доступно обновление", "no_contents": "Статус: Данные отсутствуют",
+      "cant_launch": "Статус: Невозможно запустить", "ready": "Статус: Готово к запуску"
+    },
+    "folders": { "none": "Папки: Нет", "label": "Папки: " },
+    "type_gamecard": "Игровая карта", "type_digital": "Цифровой",
+    "hint": { "manage": "A  \u2022  Управление папками", "close": "B  \u2022  Закрыть" }
+  },
+  "folders": {
+    "dialog_title": "Управление папками", "not_in_any": "Не в папке.",
+    "in_label": "В: ", "instructions": "D-Pad: навигация  A: подтвердить  B: закрыть",
+    "new_folder": "Новая папка", "done": "Готово",
+    "add_prefix": "+ ", "remove_prefix": "- "
   }
 }

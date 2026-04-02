@@ -25,7 +25,12 @@ void IconStreamer::clear() {
     m_compressed.clear();
     m_appToSlot.clear();
     m_freeSlots.clear();
+    m_gridMapping.clear();
     m_lastPage = -1;
+}
+
+void IconStreamer::setGridMapping(std::vector<int> mapping) {
+    m_gridMapping = std::move(mapping);
 }
 
 // ---------------------------------------------------------------------------
@@ -99,41 +104,78 @@ void IconStreamer::onPageChanged(int currentPage, int iconsPerPage,
     if (currentPage == m_lastPage) return;
     m_lastPage = currentPage;
 
-    int totalApps  = (int)m_compressed.size();
-    if (totalApps == 0 || iconsPerPage == 0) return;
-    int totalPages = (totalApps + iconsPerPage - 1) / iconsPerPage;
+    int totalCompressed = (int)m_compressed.size();
+    int totalIcons      = (int)allIcons.size();
+    if (totalIcons == 0 || iconsPerPage == 0 || totalCompressed == 0) return;
+    int totalPages = (totalIcons + iconsPerPage - 1) / iconsPerPage;
 
     int startPage = std::max(0, currentPage - kPageMargin);
     int endPage   = std::min(totalPages - 1, currentPage + kPageMargin);
-    int startApp  = startPage * iconsPerPage;
-    int endApp    = std::min(totalApps, (endPage + 1) * iconsPerPage);
+    int startIdx  = startPage * iconsPerPage;
+    int endIdx    = std::min(totalIcons, (endPage + 1) * iconsPerPage);
+
+    // Helper: resolve grid position to compressed-data index.
+    auto resolveApp = [&](int gridPos) -> int {
+        if (!m_gridMapping.empty()) {
+            if (gridPos >= 0 && gridPos < (int)m_gridMapping.size())
+                return m_gridMapping[gridPos];
+            return -1;
+        }
+        return gridPos;  // identity when no mapping
+    };
+
+    // Build set of app indices that should remain loaded.
+    std::vector<bool> keep(totalCompressed, false);
+    for (int g = startIdx; g < endIdx; ++g) {
+        int a = resolveApp(g);
+        if (a >= 0 && a < totalCompressed) keep[a] = true;
+    }
+
+    // Build reverse map (app index → grid position) for eviction.
+    std::vector<int> appToGrid(totalCompressed, -1);
+    if (!m_gridMapping.empty()) {
+        for (int g = 0; g < (int)m_gridMapping.size(); ++g) {
+            int a = m_gridMapping[g];
+            if (a >= 0 && a < totalCompressed) appToGrid[a] = g;
+        }
+    }
 
     // 1. Evict textures outside the new visible range.
     for (int i = 0; i < (int)m_pool.size(); ++i) {
         int app = m_pool[i].appIndex;
-        if (app >= 0 && (app < startApp || app >= endApp)) {
-            if (app < (int)allIcons.size())
-                allIcons[app]->setTexture(nullptr);
+        if (app >= 0 && !keep[app]) {
+            int gp = m_gridMapping.empty() ? app : appToGrid[app];
+            if (gp >= 0 && gp < (int)allIcons.size())
+                allIcons[gp]->setTexture(nullptr);
             m_appToSlot[app] = -1;
             m_pool[i].appIndex = -1;
             m_freeSlots.push_back(i);
         }
     }
 
-    // 2. Collect apps that need loading.
-    std::vector<int> toLoad;
-    for (int i = startApp; i < endApp; ++i) {
-        if (m_appToSlot[i] < 0 && !m_compressed[i].empty())
-            toLoad.push_back(i);
+    // 2. Collect icons that need loading; wire already-loaded textures.
+    struct LoadTask { int gridPos; int appIndex; };
+    std::vector<LoadTask> toLoad;
+    for (int g = startIdx; g < endIdx; ++g) {
+        int a = resolveApp(g);
+        if (a < 0 || a >= totalCompressed) continue;
+        if (m_appToSlot[a] >= 0) {
+            // Already loaded — wire texture to (possibly new) icon.
+            allIcons[g]->setTexture(&m_pool[m_appToSlot[a]].texture);
+            continue;
+        }
+        if (!m_compressed[a].empty())
+            toLoad.push_back({g, a});
     }
 
     if (toLoad.empty()) return;
 
     DebugLog::log("[streamer] page %d: loading %d icons [%d..%d)",
-                  currentPage, (int)toLoad.size(), startApp, endApp);
+                  currentPage, (int)toLoad.size(), startIdx, endIdx);
 
     // 3. Decode icons in parallel (CPU-bound work).
     struct Decoded {
+        int gridPos;
         int appIndex;
         uint8_t* rgba = nullptr;
         int w = 0, h = 0;
@@ -146,8 +188,9 @@ void IconStreamer::onPageChanged(int currentPage, int iconsPerPage,
         for (;;) {
             int idx = nextJob.fetch_add(1, std::memory_order_relaxed);
             if (idx >= (int)toLoad.size()) break;
-            auto result = decodeAndScale(toLoad[idx]);
-            decoded[idx] = {toLoad[idx], result.rgba, result.w, result.h, result.scaledWithMalloc};
+            auto result = decodeAndScale(toLoad[idx].appIndex);
+            decoded[idx] = {toLoad[idx].gridPos, toLoad[idx].appIndex,
+                            result.rgba, result.w, result.h, result.scaledWithMalloc};
         }
     };
 
@@ -190,8 +233,8 @@ void IconStreamer::onPageChanged(int currentPage, int iconsPerPage,
         if (slot.texture.loadFromPixels(gpu, ren, d.rgba, d.w, d.h)) {
             slot.appIndex = d.appIndex;
             m_appToSlot[d.appIndex] = poolIdx;
-            if (d.appIndex < (int)allIcons.size())
-                allIcons[d.appIndex]->setTexture(&slot.texture);
+            if (d.gridPos < (int)allIcons.size())
+                allIcons[d.gridPos]->setTexture(&slot.texture);
         }
 
         if (d.scaledWithMalloc) std::free(d.rgba);
