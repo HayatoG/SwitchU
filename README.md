@@ -178,3 +178,19 @@ If you want to help, open an issue when you find a bug and open a pull request i
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](https://github.com/PoloNX/SwitchU/blob/master/LICENSE) file for details.
+
+
+Adicionar aos planos:
+1 - Folders ficarem sempre em primeiro na lista
+2 - Adicionar filtro para mostrar apenas folders
+3 - Adicionar possibilidade de mudar o grid das folders para elas ficarem maiores e exibir menos folders na tela por página
+4 - Adicionar preview fora da folder dos jogos que estao naquela pasta ou adicionar a letra inicial ou as iniciais do nome da folder
+5 - Adicionar botao para editar folder (nome e excluir jogos diretamente desse menu)
+6 - Retirar do menu de detalhes das informaćoes dos jogos o folder manager
+7 - Adicionar um botao abaixo do miiverse para criar uma folder nova
+8 - Adicionar um botao de configuracoes de folders gerais para poder excluir todas por exemplo e retirar os jogos das folders e exibir todos os jogos na tela
+9 - As folders que já existem nao aparecem ao ligar o console, isso precisa ser exibido desde o comeco
+10 - Adicionar o efeito de glass/blur nas folders (botao de on/off nas configuraćoes gerais das folders)
+11 - Adicionar botao de selecionar preview de icones dos jogos ou iniciais dos nomes da pasta
+12 - Ao clicar na pasta, abrir uma janela com os jogos que estao nela para poder iniciar ou ver detalhes
+13 - FUTURAMENTE (nao enviar) um modo de grid onde os jogos ficam em baixo em uma linha só e em cima fica a preview da pasta com os icones dos jogos passando em carroussel ao passar por cima da pasta
