@@ -14,11 +14,12 @@
 
 ---
 
-- [Features](#features)
 - [Architecture](#architecture)
 - [Screenshots](#screenshots)
 - [How to build](#how-to-build)
+- [Installation](#installation)
 - [SD card layout](#sd-card-layout)
+- [Known issues](#known-issues)
 - [Help me](#help-me)
 - [Credits](#credits)
 - [License](#license)
@@ -63,7 +64,16 @@ git clone --recursive https://github.com/PoloNX/SwitchU
 cd SwitchU
 ```
 
-### Build (production two-applet mode)
+### Build with Docker (recommended)
+
+The easiest way to build without setting up the toolchain manually:
+
+```bash
+docker build -t switchu-builder .
+./docker-build.sh
+```
+
+### Build manually (production two-applet mode)
 
 ```bash
 xmake f -p cross --toolchain=devkita64
@@ -90,20 +100,72 @@ xmake
 xmake clean
 ```
 
-Build outputs are generated under `build/cross/aarch64/<mode>/`.
+Build outputs are generated under `build/cross/none/release/`.
 
-## Know issues
-- Some settings are not implemented yet
-- Current icons are very ugly, feel free to replace them with better ones
-- SDL2 backend is very buggy and incomplete, use it for testing only
-- You may experience somme crash when using overlays
+## Installation
+
+> **Requirements:** Nintendo Switch with [Atmosphère](https://github.com/Atmosphere-NX/Atmosphere) CFW installed.
+
+> ⚠️ **Warning:** This replaces the Switch HOME menu entirely. If something goes wrong, boot into Hekate and delete the files via its file manager before booting normally.
+
+### 1. Copy the NSPs
+
+After building, copy the output files to your SD card, renaming them as shown:
+
+| Built file | SD card destination |
+|---|---|
+| `build/cross/none/release/switchu-daemon.nsp` | `sdmc:/atmosphere/contents/0100000000001000/exefs.nsp` |
+| `build/cross/none/release/switchu-menu.nsp` | `sdmc:/atmosphere/contents/010000000000100B/exefs.nsp` |
+
+### 2. Create the boot2 flag
+
+Create an empty file at the following path so Atmosphère loads the daemon on boot:
+
+```
+sdmc:/atmosphere/contents/0100000000001000/flags/boot2.flag
+```
+
+### 3. Reboot
+
+Insert the SD card, boot with CFW active, and SwitchU will replace the HOME menu.
+
+### Uninstalling
+
+Delete the two content folders and reboot:
+
+```
+sdmc:/atmosphere/contents/0100000000001000/
+sdmc:/atmosphere/contents/010000000000100B/
+```
 
 ## SD card layout
 
-- `sdmc:/config/SwitchU/config.ini`: user settings
-- `sdmc:/config/SwitchU/applist.bin`: app metadata cache
-- `sdmc:/config/SwitchU/daemon.log` and `sdmc:/config/SwitchU/menu.log`: runtime logs
-- `sdmc:/switch/SwitchU/`: assets in non-homebrew mode
+```
+sdmc:/
+├── atmosphere/
+│   └── contents/
+│       ├── 0100000000001000/        ← Daemon (replaces qlaunch)
+│       │   ├── exefs.nsp
+│       │   └── flags/
+│       │       └── boot2.flag
+│       └── 010000000000100B/        ← Menu (library applet)
+│           └── exefs.nsp
+├── config/
+│   └── SwitchU/                     ← created automatically at runtime
+│       ├── config.ini               ← user settings
+│       ├── applist.bin              ← app metadata cache
+│       ├── daemon.log               ← daemon runtime log
+│       └── menu.log                 ← menu runtime log
+└── switch/
+    └── SwitchU/                     ← optional custom assets
+```
+
+## Known issues
+
+- Some settings are not implemented yet
+- Current icons are very ugly, feel free to replace them with better ones
+- SDL2 backend is very buggy and incomplete, use it for testing only
+- You may experience some crashes when using overlays
 
 ## Help me
 
