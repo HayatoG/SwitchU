@@ -142,17 +142,19 @@ SettingsScreen::Tab settings::tabs::SystemTab::build(SettingsScreen& screen) {
     {
         SettingItem it; it.label = i18n.tr("settings.system.region", "Region"); it.type = ItemType::Selector;
         it.options = {
-            i18n.tr("settings.system.region_japan", "Japan"),
-            i18n.tr("settings.system.region_usa", "USA"),
-            i18n.tr("settings.system.region_europe", "Europe"),
-            i18n.tr("settings.system.region_australia", "Australia"),
-            i18n.tr("settings.system.region_hong_kong", "Hong Kong"),
-            i18n.tr("settings.system.region_taiwan", "Taiwan"),
-            i18n.tr("settings.system.region_south_korea", "South Korea")
+            i18n.tr("settings.system.region_japan",     "Japan"),
+            i18n.tr("settings.system.region_usa",       "The Americas"),
+            i18n.tr("settings.system.region_europe",    "Europe"),
+            i18n.tr("settings.system.region_australia", "Australia/NZ"),
+            i18n.tr("settings.system.region_htk",       "Hong Kong/Taiwan/Korea"),
+            i18n.tr("settings.system.region_china",     "China"),
         };
         SetRegion reg = SetRegion_JPN;
         if (R_SUCCEEDED(setGetRegionCode(&reg)))
             it.intVal = (int)reg;
+        it.onChange = [](SettingItem& self) {
+            setsysSetRegionCode((SetRegion)self.intVal);
+        };
         t.items.push_back(std::move(it));
     }
 

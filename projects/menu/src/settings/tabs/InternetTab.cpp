@@ -30,6 +30,7 @@ SettingsScreen::Tab settings::tabs::InternetTab::build(SettingsScreen& screen) {
 
     u32 ip = 0;
     std::string ssid;
+    std::string dnsText;
     bool nifmOk = R_SUCCEEDED(nifmInitialize(NifmServiceType_User));
     DebugLog::log("[internet] nifmInit: %s", nifmOk ? "OK" : "FAIL");
     if (nifmOk) {
@@ -40,6 +41,19 @@ SettingsScreen::Tab settings::tabs::InternetTab::build(SettingsScreen& screen) {
             char ssidBuf[33]{};
             std::memcpy(ssidBuf, prof.wireless_setting_data.ssid, 32);
             ssid = ssidBuf;
+
+            const auto& dns = prof.ip_setting_data.dns_setting;
+            if (dns.is_automatic) {
+                dnsText = i18n.tr("settings.internet.dns_auto", "Auto (DHCP)");
+            } else {
+                char buf[64];
+                const auto& p = dns.primary_dns_server.addr;
+                const auto& s = dns.secondary_dns_server.addr;
+                std::snprintf(buf, sizeof(buf), "%u.%u.%u.%u / %u.%u.%u.%u",
+                              p[0], p[1], p[2], p[3],
+                              s[0], s[1], s[2], s[3]);
+                dnsText = buf;
+            }
         }
 
         nifmExit();
@@ -104,7 +118,7 @@ SettingsScreen::Tab settings::tabs::InternetTab::build(SettingsScreen& screen) {
 
     {
         SettingItem it; it.label = i18n.tr("settings.internet.dns", "DNS"); it.type = ItemType::Info;
-        it.infoText = i18n.tr("settings.internet.dns_auto", "Auto (DHCP)");
+        it.infoText = dnsText.empty() ? i18n.tr("common.na", "N/A") : dnsText;
         t.items.push_back(std::move(it));
     }
 
