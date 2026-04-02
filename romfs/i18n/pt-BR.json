@@ -207,20 +207,19 @@
     "cancel": "Cancelar"
   },
   "gameinfo": {
-    "playtime": { "unknown": "Tempo: Desconhecido", "never": "Tempo: Nunca jogado" },
+    "playtime": { 
+      "unknown": "Tempo: Desconhecido", 
+      "never": "Tempo: Nunca jogado",
+      "hours_minutes": "Tempo: %uh %02um  \u2022  %u execuções",
+      "minutes": "Tempo: %um  \u2022  %u execuções"
+    },
+    "id_label": "ID: ",
+    "type_gamecard": "Cartucho", "type_digital": "Digital",
     "status": {
       "suspended": "Status: Suspenso", "needs_verify": "Status: Verificação necessária",
       "needs_update": "Status: Atualização disponível", "no_contents": "Status: Dados ausentes",
       "cant_launch": "Status: Não pode iniciar", "ready": "Status: Pronto para iniciar"
     },
-    "folders": { "none": "Pastas: Nenhuma", "label": "Pastas: " },
-    "type_gamecard": "Cartucho", "type_digital": "Digital",
-    "hint": { "manage": "A  \u2022  Gerenciar Pastas", "close": "B  \u2022  Fechar" }
+    "hint": { "close": "B  \u2022  Fechar" }
   },
-  "folders": {
-    "dialog_title": "Gerenciar Pastas", "not_in_any": "Não está em nenhuma pasta.",
-    "in_label": "Em: ", "instructions": "D-Pad: navegar  A: confirmar  B: fechar",
-    "new_folder": "Nova Pasta", "done": "Concluído",
-    "add_prefix": "+ ", "remove_prefix": "- "
-  }
 }

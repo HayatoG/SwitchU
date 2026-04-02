@@ -26,7 +26,7 @@
 #include "launcher/AppListLoader.hpp"
 #include "launcher/IconStreamer.hpp"
 #include "core/SystemMessages.hpp"
-#include "core/FolderManager.hpp"
+
 #include "widgets/GameInfoOverlay.hpp"
 #include <nxui/widgets/Background.hpp>
 #include <nxui/widgets/Box.hpp>
@@ -88,10 +88,9 @@ private:
     void handleSystemAction(SysAction a);
 #endif
     void rebuildGridIcons();
-    void showFolderDialog(uint64_t titleId);
+
     void openGameInfo(GlossyIcon* icon);
-    std::shared_ptr<GlossyIcon> makeFolderIcon(const Folder& folder);
-    void openFolder(const std::string& folderId);
+
 
     nxui::Font  m_fontNormal;
     nxui::Font  m_fontSmall;
@@ -152,7 +151,7 @@ private:
     bool m_asyncRefreshPending   = false;
     int  m_refreshPrevPage       = 0;
 
-    FolderManager m_folderMgr;
+
 
     AppConfig m_config;
     bool m_settingsNeedRefresh        = false;

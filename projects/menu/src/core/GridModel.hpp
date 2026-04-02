@@ -68,35 +68,7 @@ public:
         return false;
     }
 
-    // ── Folder filter ─────────────────────────────────────────
-    void setFolderFilter(const std::string& name, const std::vector<uint64_t>& tids) {
-        m_filterName = name;
-        m_filterTids = tids;
-        m_hasFilter  = true;
-    }
-    void clearFolderFilter() {
-        m_hasFilter = false;
-        m_filterName.clear();
-        m_filterTids.clear();
-    }
-    bool hasFilter() const              { return m_hasFilter; }
-    const std::string& filterName() const { return m_filterName; }
-
-    // Returns all entries when no filter is active, or only matching entries.
-    std::vector<AppEntry> filteredEntries() const {
-        if (!m_hasFilter) return m_entries;
-        std::vector<AppEntry> result;
-        for (const auto& e : m_entries)
-            for (uint64_t tid : m_filterTids)
-                if (e.titleId == tid) { result.push_back(e); break; }
-        return result;
-    }
-
 private:
     std::vector<AppEntry> m_entries;
-
-    bool                   m_hasFilter  = false;
-    std::string            m_filterName;
-    std::vector<uint64_t>  m_filterTids;
 };
 

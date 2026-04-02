@@ -207,20 +207,11 @@
     "cancel": "Abbrechen"
   },
   "gameinfo": {
-    "playtime": { "unknown": "Spielzeit: Unbekannt", "never": "Spielzeit: Nie gespielt" },
+    "playtime": { "unknown": "Spielzeit: Unbekannt", "never": "Spielzeit: Nie gespielt", "hours_minutes": "Spielzeit: %uh %02um \u2022 %u Starts", "minutes": "Spielzeit: %um \u2022 %u Starts" }, "id_label": "ID: ", "type_gamecard": "Spielkarte", "type_digital": "Digital",
     "status": {
       "suspended": "Status: Angehalten", "needs_verify": "Status: Überprüfung erforderlich",
       "needs_update": "Status: Update verfügbar", "no_contents": "Status: Spieldaten fehlen",
       "cant_launch": "Status: Kann nicht gestartet werden", "ready": "Status: Startbereit"
     },
-    "folders": { "none": "Ordner: Keine", "label": "Ordner: " },
-    "type_gamecard": "Spielkarte", "type_digital": "Digital",
-    "hint": { "manage": "A  \u2022  Ordner verwalten", "close": "B  \u2022  Schließen" }
   },
-  "folders": {
-    "dialog_title": "Ordner verwalten", "not_in_any": "In keinem Ordner.",
-    "in_label": "In: ", "instructions": "D-Pad: navigieren  A: bestätigen  B: schließen",
-    "new_folder": "Neuer Ordner", "done": "Fertig",
-    "add_prefix": "+ ", "remove_prefix": "- "
-  }
 }

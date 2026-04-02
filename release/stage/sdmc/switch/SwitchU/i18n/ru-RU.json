@@ -1,0 +1,217 @@
+{
+  "common": {
+    "auto": "Авто",
+    "na": "Н/Д",
+    "active": "Активно"
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "sidebar": {
+    "album": "Альбом",
+    "mii_editor": "Редактор Mii",
+    "settings": "Настройки",
+    "controllers": "Контроллеры",
+    "sleep": "Сон",
+    "music": "Музыка"
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "settings": {
+    "tabs": {
+      "system": "Система",
+      "audio": "Аудио",
+      "display": "Экран",
+      "internet": "Интернет",
+      "controllers": "Контроллеры",
+      "bluetooth": "Bluetooth",
+      "sleep": "Сон",
+      "music": "Музыка",
+      "theme": "Тема",
+      "about": "О программе"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "system": {
+      "firmware": "Версия прошивки",
+      "custom_firmware": "Custom Firmware",
+      "not_detected": "Не обнаружено",
+      "emunand": "EmuNAND",
+      "inactive_sysnand": "Неактивно / SysNAND",
+      "console_nickname": "Имя консоли",
+      "serial_number": "Серийный номер",
+      "timezone": "Часовой пояс",
+      "usb30": "USB 3.0",
+      "usb30_desc": "Включить USB 3.0 для более быстрой передачи данных.",
+      "battery_lot": "Партия батареи",
+      "ui_language": "Язык интерфейса",
+      "console_language": "Язык консоли",
+      "region": "Регион",
+      "region_japan": "Япония",
+      "region_usa": "США",
+      "region_europe": "Европа",
+      "region_australia": "Австралия",
+      "region_hong_kong": "Гонконг",
+      "region_taiwan": "Тайвань",
+      "region_south_korea": "Южная Корея",
+      "auto_update": "Автообновление",
+      "error_reporting": "Отправка ошибок"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "audio": {
+      "speaker_auto_mute": "Автоматическое отключение динамиков",
+      "speaker_auto_mute_desc": "Автоматически отключать динамики при подключении наушников.",
+      "headphone_warning": "Предупреждение о громкости наушников",
+      "acknowledged": "Принято",
+      "tv_audio_output": "Аудиовыход TV",
+      "tv_audio_output_desc": "Выберите формат аудио для вывода на TV через HDMI.",
+      "mono": "Моно",
+      "stereo": "Стерео",
+      "surround": "Surround",
+      "tv_resolution": "Разрешение TV",
+      "tv_resolution_desc": "Настройте разрешение HDMI. Auto использует рекомендуемое значение.",
+      "res_720p": "720p",
+      "res_1080p": "1080p",
+      "hdmi_rgb_range": "Диапазон RGB HDMI",
+      "hdmi_rgb_range_desc": "Полный для мониторов ПК, Ограниченный для большинства TV.",
+      "full": "Полный",
+      "limited": "Ограниченный"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "display": {
+      "brightness": "Яркость",
+      "auto_brightness": "Автояркость",
+      "auto_brightness_desc": "Автоматически регулирует яркость в зависимости от освещения.",
+      "burn_in": "Снижение выгорания экрана",
+      "burn_in_desc": "Снижает выгорание экрана при длительном использовании.",
+      "tv_screen_size": "Размер экрана TV",
+      "tv_screen_size_desc": "Настройте overscan, чтобы видеть всё изображение.",
+      "album_storage": "Хранилище альбома",
+      "album_storage_desc": "Где сохраняются скриншоты и видео.",
+      "album_sd": "SD-карта",
+      "album_nand": "NAND",
+      "ui_wireframe": "Каркас интерфейса",
+      "ui_wireframe_desc": "Показывает контуры всех Box для отладки макета."
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "internet": {
+      "wifi_ssid": "WiFi-сеть",
+      "ip_address": "IP-адрес",
+      "not_connected": "Не подключено",
+      "wifi": "WiFi",
+      "wifi_desc": "Включить или выключить WiFi-модуль.",
+      "auto_app_download": "Автоматическая загрузка приложений",
+      "auto_app_download_desc": "Автоматически загружать обновления для установленных игр.",
+      "mac_address": "MAC-адрес",
+      "dns": "DNS",
+      "dns_auto": "Авто (DHCP)"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "controllers": {
+      "vibration": "Вибрация",
+      "usb_wired": "Проводное USB-соединение",
+      "usb_wired_desc": "Использовать проводной режим для снижения задержки на совместимых контроллерах.",
+      "nfc": "NFC (amiibo)"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "bluetooth": {
+      "bluetooth": "Bluetooth",
+      "afh": "Bluetooth AFH",
+      "general": "Общее",
+      "connected_device": "Подключенное устройство",
+      "no_device_connected": "Нет подключённых устройств",
+      "disconnect": "Отключить",
+      "paired_devices": "Сопряжённые устройства",
+      "no_paired_devices": "Нет сопряжённых устройств",
+      "discover_devices": "Поиск устройств",
+      "start_search": "Поиск устройств...",
+      "stop_search": "Остановить поиск",
+      "connect": "Подключить",
+      "unpair": "Разорвать связь",
+      "pair_connect": "Сопрячь и подключить",
+      "device_actions": "Действия с устройством"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "sleep": {
+      "1min": "1 мин",
+      "3min": "3 мин",
+      "5min": "5 мин",
+      "10min": "10 мин",
+      "30min": "30 мин",
+      "1h": "1 час",
+      "2h": "2 часа",
+      "3h": "3 часа",
+      "6h": "6 часов",
+      "12h": "12 часов",
+      "never": "Никогда",
+      "handheld": "Автосон в портативном режиме",
+      "handheld_desc": "Время до автосна в портативном режиме.",
+      "docked": "Автосон в доке",
+      "docked_desc": "Время до автосна в доке.",
+      "media_sleep": "Сон при воспроизведении медиа",
+      "media_sleep_desc": "Разрешить автосон во время воспроизведения медиа.",
+      "wake_power": "Пробуждение при питании",
+      "wake_power_desc": "Пробуждать консоль при подключении или отключении адаптера питания."
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "theme": {
+      "preset": "Пресет",
+      "menu_mode": "Режим меню",
+      "mode_dark": "Тёмный",
+      "mode_light": "Светлый",
+      "accent": "Акцент",
+      "background": "Фон",
+      "bg_accent": "Фоновый акцент",
+      "shapes": "Плавающие формы",
+      "delete_preset": "Удалить пресет",
+      "save_preset": "Сохранить как пресет",
+      "reset_defaults": "Сбросить настройки",
+      "builtin_readonly": "Встроенные пресеты нельзя удалить."
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "music": {
+      "sound_preset": "Звуковой пресет",
+      "menu_music": "Музыка меню",
+      "music_volume": "Громкость музыки",
+      "sfx_volume": "Громкость эффектов",
+      "next_track": "Следующий трек",
+      "track_changed": "Трек изменён"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+    "about": {
+      "version": "Версия",
+      "author": "Автор",
+      "license": "Лицензия",
+      "license_value": "GPL-2.0",
+      "acknowledgements": "Благодарности",
+      "acknowledgements_desc": "Спасибо xortroll за помощь с проектом uLaunch и за поддержку и советы во время разработки.",
+      "source_code": "Исходный код",
+      "source_code_value": "github.com/PoloNX/SwitchU"
+    }
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "userselect": {
+    "title": "Кто играет?"
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "languages": {
+    "ja-JP": "Японский",
+    "en-US": "Английский (США)",
+    "fr-FR": "Французский",
+    "de-DE": "Немецкий",
+    "it-IT": "Итальянский",
+    "es-ES": "Испанский",
+    "zh-CN": "Китайский",
+    "ko-KR": "Корейский",
+    "nl-NL": "Нидерландский",
+    "pt-PT": "Португальский",
+    "ru-RU": "Русский",
+    "zh-TW": "Традиционный китайский",
+    "en-GB": "Английский (Великобритания)",
+    "fr-CA": "Французский (Канада)",
+    "es-419": "Испанский (Латинская Америка)",
+    "pt-BR": "Португальский (Бразилия)"
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "error": {
+    "title": "Невозможно запустить",
+    "gamecard_not_inserted": "Карта игры не вставлена.",
+    "needs_verify": "Данные игры требуют проверки.",
+    "needs_update": "Доступно обязательное обновление.",
+    "no_contents": "Данные игры отсутствуют.",
+    "cannot_launch": "Эту игру невозможно запустить."
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "button": {
+    "ok": "OK",
+    "cancel": "Отмена"
+  }, "hint": { "close": "B \u2022 Закрыть" }
+  "gameinfo": {
+    "playtime": { "unknown": "Время: Неизвестно", "never": "Время: Никогда не играл", "hours_minutes": "Время: %uh %02um \u2022 %u запусков", "minutes": "Время: %um \u2022 %u запусков" }, "id_label": "ID: ", "type_gamecard": "Картридж", "type_digital": "Цифровой",
+    "status": {
+      "suspended": "Статус: Приостановлено", "needs_verify": "Статус: Требуется проверка",
+      "needs_update": "Статус: Доступно обновление", "no_contents": "Статус: Данные отсутствуют",
+      "cant_launch": "Статус: Невозможно запустить", "ready": "Статус: Готово к запуску"
+    }, "hint": { "close": "B \u2022 Закрыть" }
+  }, "hint": { "close": "B \u2022 Закрыть" }
+}

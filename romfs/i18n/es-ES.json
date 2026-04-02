@@ -3,7 +3,7 @@
     "auto": "Auto",
     "na": "N/A",
     "active": "Activo"
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "sidebar": {
     "album": "Álbum",
     "mii_editor": "Editor Mii",
@@ -11,7 +11,7 @@
     "controllers": "Mandos",
     "sleep": "Suspender",
     "music": "Música"
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "settings": {
     "tabs": {
       "system": "Sistema",
@@ -24,7 +24,7 @@
       "music": "Música",
       "theme": "Tema",
       "about": "Acerca de"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "system": {
       "firmware": "Versión del firmware",
       "custom_firmware": "Custom Firmware",
@@ -49,7 +49,7 @@
       "region_south_korea": "Corea del Sur",
       "auto_update": "Actualización automática",
       "error_reporting": "Informe de errores"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "audio": {
       "speaker_auto_mute": "Auto-mute de altavoces",
       "speaker_auto_mute_desc": "Silencia automáticamente los altavoces al conectar auriculares.",
@@ -68,7 +68,7 @@
       "hdmi_rgb_range_desc": "Completo para monitores de PC, Limitado para la mayoría de TVs.",
       "full": "Completo",
       "limited": "Limitado"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "display": {
       "brightness": "Brillo",
       "auto_brightness": "Brillo automático",
@@ -83,7 +83,7 @@
       "album_nand": "NAND",
       "ui_wireframe": "Wireframe de la interfaz",
       "ui_wireframe_desc": "Muestra contornos de todos los widgets Box para depuración de layout."
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "internet": {
       "wifi_ssid": "Red WiFi",
       "ip_address": "Dirección IP",
@@ -95,13 +95,13 @@
       "mac_address": "Dirección MAC",
       "dns": "DNS",
       "dns_auto": "Auto (DHCP)"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "controllers": {
       "vibration": "Vibración",
       "usb_wired": "Comunicación USB por cable",
       "usb_wired_desc": "Usa modo USB por cable para reducir latencia en mandos compatibles.",
       "nfc": "NFC (amiibo)"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "bluetooth": {
       "bluetooth": "Bluetooth",
       "afh": "Bluetooth AFH",
@@ -118,7 +118,7 @@
       "unpair": "Desemparejar",
       "pair_connect": "Emparejar y conectar",
       "device_actions": "Acciones del dispositivo"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "sleep": {
       "1min": "1 min",
       "3min": "3 min",
@@ -139,7 +139,7 @@
       "media_sleep_desc": "Permite suspender automáticamente durante reproducción de medios.",
       "wake_power": "Despertar al cambiar energía",
       "wake_power_desc": "Despierta la consola al conectar o desconectar el adaptador AC."
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "theme": {
       "preset": "Preajuste",
       "menu_mode": "Modo del menú",
@@ -153,7 +153,7 @@
       "save_preset": "Guardar como preajuste",
       "reset_defaults": "Restaurar valores",
       "builtin_readonly": "Los preajustes internos no pueden eliminarse."
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "music": {
       "sound_preset": "Preajuste de sonido",
       "menu_music": "Música del menú",
@@ -161,7 +161,7 @@
       "sfx_volume": "Volumen de efectos",
       "next_track": "Siguiente pista",
       "track_changed": "Pista cambiada"
-    },
+    }, "hint": { "close": "B \u2022 Cerrar" }
     "about": {
       "version": "Versión",
       "author": "Autor",
@@ -172,10 +172,10 @@
       "source_code": "Código fuente",
       "source_code_value": "github.com/PoloNX/SwitchU"
     }
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "userselect": {
     "title": "¿Quién está jugando?"
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "languages": {
     "ja-JP": "Japonés",
     "en-US": "Inglés (EE.UU.)",
@@ -193,7 +193,7 @@
     "fr-CA": "Francés (Canadá)",
     "es-419": "Español (Latinoamérica)",
     "pt-BR": "Portugués (Brasil)"
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "error": {
     "title": "No se puede iniciar",
     "gamecard_not_inserted": "La tarjeta de juego no está insertada.",
@@ -201,26 +201,17 @@
     "needs_update": "Hay una actualización obligatoria disponible.",
     "no_contents": "Faltan los datos del juego.",
     "cannot_launch": "Este juego no se puede iniciar."
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "button": {
     "ok": "OK",
     "cancel": "Cancelar"
-  },
+  }, "hint": { "close": "B \u2022 Cerrar" }
   "gameinfo": {
-    "playtime": { "unknown": "Tiempo: Desconocido", "never": "Tiempo: Nunca jugado" },
+    "playtime": { "unknown": "Tiempo: Desconocido", "never": "Tiempo: Nunca jugado", "hours_minutes": "Tiempo: %uh %02um \u2022 %u inicios", "minutes": "Tiempo: %um \u2022 %u inicios" }, "id_label": "ID: ", "type_gamecard": "Cartucho", "type_digital": "Digital",
     "status": {
       "suspended": "Estado: Suspendido", "needs_verify": "Estado: Verificación necesaria",
       "needs_update": "Estado: Actualización disponible", "no_contents": "Estado: Datos faltantes",
       "cant_launch": "Estado: No se puede iniciar", "ready": "Estado: Listo para iniciar"
-    },
-    "folders": { "none": "Carpetas: Ninguna", "label": "Carpetas: " },
-    "type_gamecard": "Tarjeta de juego", "type_digital": "Digital",
-    "hint": { "manage": "A  \u2022  Gestionar carpetas", "close": "B  \u2022  Cerrar" }
-  },
-  "folders": {
-    "dialog_title": "Gestionar carpetas", "not_in_any": "No está en ninguna carpeta.",
-    "in_label": "En: ", "instructions": "D-Pad: navegar  A: confirmar  B: cerrar",
-    "new_folder": "Nueva carpeta", "done": "Listo",
-    "add_prefix": "+ ", "remove_prefix": "- "
-  }
+    }, "hint": { "close": "B \u2022 Cerrar" }
+  }, "hint": { "close": "B \u2022 Cerrar" }
 }

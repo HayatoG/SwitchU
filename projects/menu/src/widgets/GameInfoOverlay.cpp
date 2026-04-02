@@ -38,10 +38,10 @@ std::string GameInfoOverlay::queryPlaytime() const {
     uint32_t mins = (uint32_t)((secs % 3600) / 60);
     char buf[64];
     if (hrs > 0)
-        std::snprintf(buf, sizeof(buf), "Playtime: %uh %02um  \xE2\x80\xA2  %u launches",
+        std::snprintf(buf, sizeof(buf), i18n.tr("gameinfo.playtime.hours_minutes", "Playtime: %uh %02um  \xE2\x80\xA2  %u launches").c_str(),
                       hrs, mins, stats.total_launches);
     else
-        std::snprintf(buf, sizeof(buf), "Playtime: %um  \xE2\x80\xA2  %u launches",
+        std::snprintf(buf, sizeof(buf), i18n.tr("gameinfo.playtime.minutes", "Playtime: %um  \xE2\x80\xA2  %u launches").c_str(),
                       mins, stats.total_launches);
     return buf;
 }
@@ -56,23 +56,12 @@ std::string GameInfoOverlay::statusText() const {
     return i18n.tr("gameinfo.status.ready", "Status: Ready to launch");
 }
 
-static std::string buildFoldersText(const std::vector<std::string>& names) {
-    auto& i18n = nxui::I18n::instance();
-    if (names.empty()) return i18n.tr("gameinfo.folders.none", "Folders: None");
-    std::string s = i18n.tr("gameinfo.folders.label", "Folders: ");
-    for (int i = 0; i < (int)names.size(); ++i) {
-        if (i > 0) s += ", ";
-        s += names[i];
-    }
-    return s;
-}
-
 // ── Widget tree ───────────────────────────────────────────────────────────────
 
 void GameInfoOverlay::buildWidgetTree() {
     clearChildren();
     m_iconWidget.reset();
-    m_foldersLabel.reset();
+
 
     auto& i18n = nxui::I18n::instance();
 
@@ -142,7 +131,7 @@ void GameInfoOverlay::buildWidgetTree() {
     std::string typeStr = m_info.isGameCard
         ? i18n.tr("gameinfo.type_gamecard", "Game Card")
         : i18n.tr("gameinfo.type_digital",  "Digital");
-    infoCol->addChild(makeInfoRow("ID: " + std::string(tidBuf) + "  \xE2\x80\xA2  " + typeStr,
+    infoCol->addChild(makeInfoRow(i18n.tr("gameinfo.id_label", "ID: ") + std::string(tidBuf) + "  \xE2\x80\xA2  " + typeStr,
                                    bodyFont, infoW, secondary));
 
     // Playtime
@@ -151,28 +140,19 @@ void GameInfoOverlay::buildWidgetTree() {
     // Status
     infoCol->addChild(makeInfoRow(statusText(), bodyFont, infoW, secondary));
 
-    // Folders
-    m_foldersLabel = makeInfoRow(buildFoldersText(m_info.folderNames),
-                                  bodyFont, infoW, secondary);
-    infoCol->addChild(m_foldersLabel);
+
 
     topRow->addChild(infoCol);
     addChild(topRow);
 
-    // ── Hint row (A • Manage Folders  |  B • Close) ──────────
+    // ── Hint row (B • Close) ──────────
     auto hintRow = std::make_shared<nxui::Box>(nxui::Axis::ROW,
-                                               nxui::JustifyContent::SPACE_BETWEEN,
+                                               nxui::JustifyContent::FLEX_END,
                                                nxui::AlignItems::CENTER);
     hintRow->setRect({0, 0, contentW, kHintH});
     hintRow->setWireframeEnabled(false);
 
-    auto hintLeft = std::make_shared<nxui::Label>(
-        i18n.tr("gameinfo.hint.manage", "A  \xE2\x80\xA2  Manage Folders"), bodyFont);
-    hintLeft->setTextColor(secondary);
-    hintLeft->setScale(0.82f);
-    hintLeft->setVAlign(nxui::Label::VAlign::Center);
-    hintLeft->setRect({0, 0, contentW * 0.6f, kHintH});
-    hintRow->addChild(hintLeft);
+
 
     auto hintRight = std::make_shared<nxui::Label>(
         i18n.tr("gameinfo.hint.close", "B  \xE2\x80\xA2  Close"), bodyFont);
@@ -180,7 +160,7 @@ void GameInfoOverlay::buildWidgetTree() {
     hintRight->setScale(0.82f);
     hintRight->setHAlign(nxui::Label::HAlign::Right);
     hintRight->setVAlign(nxui::Label::VAlign::Center);
-    hintRight->setRect({0, 0, contentW * 0.4f, kHintH});
+    hintRight->setRect({0, 0, contentW * 0.5f, kHintH});
     hintRow->addChild(hintRight);
 
     addChild(hintRow);
@@ -202,10 +182,7 @@ void GameInfoOverlay::setupActions() {
         if (!m_active || m_animatingOut) return;
         hide();
     });
-    addAction(static_cast<uint64_t>(nxui::Button::A), [this]() {
-        if (!m_active || m_animatingOut) return;
-        if (m_manageFoldersCb) m_manageFoldersCb(m_info.titleId);
-    });
+
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -235,11 +212,6 @@ void GameInfoOverlay::hide() {
     m_panelScale.set(0.96f,   0.18f, nxui::Easing::outCubic);
     setFocusable(false);
     clearActions();
-}
-
-void GameInfoOverlay::updateFolderNames(const std::vector<std::string>& names) {
-    if (m_foldersLabel)
-        m_foldersLabel->setText(buildFoldersText(names));
 }
 
 // ── Update / Render ───────────────────────────────────────────────────────────

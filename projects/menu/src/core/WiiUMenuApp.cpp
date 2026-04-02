@@ -260,16 +260,8 @@ void WiiUMenuApp::buildGrid() {
     m_theme = effective.toTheme();
 
     std::vector<std::shared_ptr<GlossyIcon>> icons;
-    if (!m_model.hasFilter()) {
-        for (const auto& entry : m_model.entries()) {
-            if (m_folderMgr.folderNamesForTitle(entry.titleId).empty())
-                icons.push_back(makeIcon(entry));
-        }
-        for (const auto& folder : m_folderMgr.folders())
-            icons.push_back(makeFolderIcon(folder));
-    } else {
-        for (const auto& entry : m_model.filteredEntries())
-            icons.push_back(makeIcon(entry));
+    for (const auto& entry : m_model.entries()) {
+        icons.push_back(makeIcon(entry));
     }
 
     m_background = std::make_shared<WaraWaraBackground>();
@@ -463,7 +455,7 @@ void WiiUMenuApp::buildGrid() {
     m_overlayLayer->addChild(m_dialog);
     m_overlayLayer->addChild(m_launchAnim);
 
-    m_folderMgr.load(std::string(SD_ASSETS) + "/folders.dat");
+
 
     m_gameInfo = std::make_shared<GameInfoOverlay>();
     m_gameInfo->setFont(&m_fontNormal);
@@ -471,10 +463,7 @@ void WiiUMenuApp::buildGrid() {
     m_gameInfo->setTheme(&m_theme);
     m_gameInfo->setVisible(false);
     m_gameInfo->setFocusable(false);
-    m_gameInfo->onManageFolders([this](uint64_t tid) {
-        if (m_gameInfo->isActive()) m_gameInfo->hide();
-        showFolderDialog(tid);
-    });
+
     m_gameInfo->onCloseSfx([this]() { m_audio.playSfx(Sfx::ModalHide); });
     m_overlayLayer->addChild(m_gameInfo);
 
@@ -788,14 +777,7 @@ void WiiUMenuApp::wireFocusCallback() {
             else
 #endif
                 titleText = icon->title();
-            if (m_model.hasFilter())
-                titleText = "[" + m_model.filterName() + "]  " + titleText;
             m_titlePill->setText(titleText);
-            m_titlePill->setVisible(true);
-        } else if (cur && cur->tag() == "folder_icon") {
-            m_grid->focusManager().setFocus(cur);
-            auto* icon = static_cast<GlossyIcon*>(cur);
-            m_titlePill->setText(icon->title());
             m_titlePill->setVisible(true);
         } else if (cur) {
             for (auto& btn : m_sidebar.leftButtons()) {
@@ -813,10 +795,7 @@ void WiiUMenuApp::wireFocusCallback() {
     if (auto* cur = focusManager().current()) {
         if (cur->tag() == "glossy_icon") {
             std::string t = static_cast<GlossyIcon*>(cur)->title();
-            if (m_model.hasFilter()) t = "[" + m_model.filterName() + "]  " + t;
             m_titlePill->setText(t);
-        } else if (cur->tag() == "folder_icon") {
-            m_titlePill->setText(static_cast<GlossyIcon*>(cur)->title());
         }
     }
 }
@@ -896,7 +875,7 @@ void WiiUMenuApp::wireGlobalActions() {
                     for (auto& ic : m_grid->allIcons())
                         ic->setSuspended(false);
                     if (auto* cur = m_grid->focusManager().current()) {
-                        if (cur->tag() == "glossy_icon" || cur->tag() == "folder_icon")
+                        if (cur->tag() == "glossy_icon")
                             m_titlePill->setText(static_cast<GlossyIcon*>(cur)->title());
                     }
                 }, true}
@@ -914,15 +893,7 @@ void WiiUMenuApp::wireGlobalActions() {
         openGameInfo(static_cast<GlossyIcon*>(cur));
     });
 
-    root.addAction(static_cast<uint64_t>(nxui::Button::B), [this]() {
-        if (!m_model.hasFilter()) return;
-        if (m_gameInfo && m_gameInfo->isActive()) return;
-        if (m_dialog && m_dialog->isActive()) return;
-        if (m_settings && m_settings->isActive()) return;
-        m_model.clearFolderFilter();
-        m_audio.playSfx(Sfx::PageChange);
-        rebuildGridIcons();
-    });
+
 }
 
 void WiiUMenuApp::handleTouch() {
@@ -1017,33 +988,12 @@ void WiiUMenuApp::finalizeRefresh() {
     std::vector<std::shared_ptr<GlossyIcon>> icons;
     std::vector<int> gridMapping;
 
-    if (!m_model.hasFilter()) {
-        const auto& allEntries = m_model.entries();
-        for (int i = 0; i < (int)allEntries.size(); ++i) {
-            if (m_folderMgr.folderNamesForTitle(allEntries[i].titleId).empty()) {
-                auto icon = makeIcon(allEntries[i]);
-                icon->setBaseColor(m_theme.iconDefault);
-                icons.push_back(std::move(icon));
-                gridMapping.push_back(i);
-            }
-        }
-        for (const auto& folder : m_folderMgr.folders()) {
-            icons.push_back(makeFolderIcon(folder));
-            gridMapping.push_back(-1);
-        }
-    } else {
-        const auto& allEntries = m_model.entries();
-        for (const auto& entry : m_model.filteredEntries()) {
-            auto icon = makeIcon(entry);
-            icon->setBaseColor(m_theme.iconDefault);
-            icons.push_back(std::move(icon));
-            for (int j = 0; j < (int)allEntries.size(); ++j) {
-                if (allEntries[j].titleId == entry.titleId) {
-                    gridMapping.push_back(j);
-                    break;
-                }
-            }
-        }
+    const auto& allEntries = m_model.entries();
+    for (int i = 0; i < (int)allEntries.size(); ++i) {
+        auto icon = makeIcon(allEntries[i]);
+        icon->setBaseColor(m_theme.iconDefault);
+        icons.push_back(std::move(icon));
+        gridMapping.push_back(i);
     }
 
     m_grid->setup(std::move(icons), 5, 3, 150, 150, 20, 16);
@@ -1131,10 +1081,7 @@ void WiiUMenuApp::applyTheme() {
     m_background->setShapeColor(m_theme.shapeColor);
 
     for (auto& icon : m_grid->allIcons()) {
-        if (icon->tag() == "folder_icon")
-            icon->setBaseColor(m_theme.cursorNormal);
-        else
-            icon->setBaseColor(m_theme.iconDefault);
+        icon->setBaseColor(m_theme.iconDefault);
         icon->setBorderColor(m_theme.panelBorder);
         icon->setHighlightColor(m_theme.panelHighlight);
         icon->setCornerRadius(m_theme.iconCornerRadius);
@@ -1538,7 +1485,7 @@ void WiiUMenuApp::openGameInfo(GlossyIcon* icon) {
     info.title       = icon->title();
     info.titleId     = icon->titleId();
     info.iconTex     = icon->texture();
-    info.folderNames = m_folderMgr.folderNamesForTitle(icon->titleId());
+
 
     const AppEntry* entry = m_model.findByTitleId(icon->titleId());
     if (entry) {
@@ -1559,129 +1506,18 @@ void WiiUMenuApp::openGameInfo(GlossyIcon* icon) {
     focusManager().setFocus(m_gameInfo.get());
 }
 
-void WiiUMenuApp::showFolderDialog(uint64_t titleId) {
-    if (!m_dialog) return;
-    m_audio.playSfx(Sfx::ModalShow);
-
-    auto& i18n = nxui::I18n::instance();
-
-    // Build message: list which folders this game is in
-    auto currentNames = m_folderMgr.folderNamesForTitle(titleId);
-    std::string message;
-    if (currentNames.empty()) {
-        message = i18n.tr("folders.not_in_any", "Not in any folder.");
-    } else {
-        message = i18n.tr("folders.in_label", "In: ");
-        for (int i = 0; i < (int)currentNames.size(); ++i) {
-            if (i > 0) message += ", ";
-            message += currentNames[i];
-        }
-    }
-    message += "\n" + i18n.tr("folders.instructions", "D-Pad: navigate  A: confirm  B: close");
-
-    std::vector<OverlayDialog::ButtonDef> buttons;
-
-    // Show up to 2 folder toggle buttons (+ prefix shows membership)
-    const auto& folders = m_folderMgr.folders();
-    int shown = std::min((int)folders.size(), 2);
-    for (int i = 0; i < shown; ++i) {
-        const auto& folder = folders[i];
-        bool inFolder = m_folderMgr.isInFolder(folder.id, titleId);
-        std::string label = (inFolder
-            ? i18n.tr("folders.remove_prefix", "- ") + folder.name
-            : i18n.tr("folders.add_prefix",    "+ ") + folder.name);
-        std::string fid = folder.id;
-        buttons.push_back({label, [this, fid, titleId, inFolder]() {
-            if (inFolder)
-                m_folderMgr.removeFromFolder(fid, titleId);
-            else
-                m_folderMgr.addToFolder(fid, titleId);
-            if (m_gameInfo && m_gameInfo->isActive())
-                m_gameInfo->updateFolderNames(m_folderMgr.folderNamesForTitle(titleId));
-            rebuildGridIcons();
-            showFolderDialog(titleId);
-        }, false});
-    }
-
-    // New Folder button
-    buttons.push_back({i18n.tr("folders.new_folder", "New Folder"), [this, titleId]() {
-        std::string name = "Folder " + std::to_string(m_folderMgr.count() + 1);
-        std::string fid = m_folderMgr.createFolder(name);
-        m_folderMgr.addToFolder(fid, titleId);
-        if (m_gameInfo && m_gameInfo->isActive())
-            m_gameInfo->updateFolderNames(m_folderMgr.folderNamesForTitle(titleId));
-        rebuildGridIcons();
-        showFolderDialog(titleId);
-    }, false});
-
-    buttons.push_back({i18n.tr("folders.done", "Done"), [this]() {}, true});
-
-    m_dialogReturnFocus = focusManager().current();
-    int defaultIdx = (int)buttons.size() - 1;
-    m_dialog->show(i18n.tr("folders.dialog_title", "Manage Folders"),
-                   message, std::move(buttons), defaultIdx, {});
-    focusManager().setFocus(m_dialog.get());
-}
-
-std::shared_ptr<GlossyIcon> WiiUMenuApp::makeFolderIcon(const Folder& folder) {
-    auto icon = std::make_shared<GlossyIcon>();
-    icon->setTag("folder_icon");
-    icon->setTitle(folder.name);
-    icon->setTitleId(0);
-    icon->setTexture(nullptr);
-    icon->setCornerRadius(m_theme.iconCornerRadius);
-    icon->setBaseColor(m_theme.cursorNormal);
-    icon->setBorderColor(m_theme.panelBorder);
-    icon->setHighlightColor(m_theme.panelHighlight);
-    std::string fid = folder.id;
-    icon->setOnActivate([this, fid]() { openFolder(fid); });
-    return icon;
-}
-
-void WiiUMenuApp::openFolder(const std::string& folderId) {
-    for (const auto& f : m_folderMgr.folders()) {
-        if (f.id == folderId) {
-            m_model.setFolderFilter(f.name, f.titleIds);
-            m_audio.playSfx(Sfx::Activate);
-            rebuildGridIcons();
-            return;
-        }
-    }
-}
-
 void WiiUMenuApp::rebuildGridIcons() {
     m_grid->clearChildren();
 
     std::vector<std::shared_ptr<GlossyIcon>> icons;
     std::vector<int> gridMapping;
 
-    if (!m_model.hasFilter()) {
-        const auto& allEntries = m_model.entries();
-        for (int i = 0; i < (int)allEntries.size(); ++i) {
-            if (m_folderMgr.folderNamesForTitle(allEntries[i].titleId).empty()) {
-                auto icon = makeIcon(allEntries[i]);
-                icon->setBaseColor(m_theme.iconDefault);
-                icons.push_back(std::move(icon));
-                gridMapping.push_back(i);
-            }
-        }
-        for (const auto& folder : m_folderMgr.folders()) {
-            icons.push_back(makeFolderIcon(folder));
-            gridMapping.push_back(-1);
-        }
-    } else {
-        const auto& allEntries = m_model.entries();
-        for (const auto& entry : m_model.filteredEntries()) {
-            auto icon = makeIcon(entry);
-            icon->setBaseColor(m_theme.iconDefault);
-            icons.push_back(std::move(icon));
-            for (int j = 0; j < (int)allEntries.size(); ++j) {
-                if (allEntries[j].titleId == entry.titleId) {
-                    gridMapping.push_back(j);
-                    break;
-                }
-            }
-        }
+    const auto& allEntries = m_model.entries();
+    for (int i = 0; i < (int)allEntries.size(); ++i) {
+        auto icon = makeIcon(allEntries[i]);
+        icon->setBaseColor(m_theme.iconDefault);
+        icons.push_back(std::move(icon));
+        gridMapping.push_back(i);
     }
 
     m_grid->setup(std::move(icons), 5, 3, 150, 150, 20, 16);
